@@ -30,9 +30,8 @@ function App() {
         {/* <!-- /container --> */}
 
         <Rnav />
-        <Bottom />
       </div>
-      {/* <!-- /wrap --> */}
+      <Bottom />
     </BrowserRouter>
   );
 }

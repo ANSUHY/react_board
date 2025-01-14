@@ -18,6 +18,7 @@ function BoardDetailPage() {
   /** ===== state로 넘어온 값 */
   const { state } = useLocation();
   const urlParamData = state;
+  console.log("Detail : state로 넘어온 값 ", urlParamData);
 
   /** ===== state 지정 */
   let [board, setBoard] = useState(); //게시글데이터
@@ -44,7 +45,6 @@ function BoardDetailPage() {
       url: `http://localhost:8080/api/board/detail/${targetBoardNo}`,
     })
       .then((res) => {
-        console.log(res.data);
         //board 셋팅
         setBoard(res.data);
       })
@@ -52,6 +52,15 @@ function BoardDetailPage() {
         console.log("getBoardDetail : 실패함");
         console.log(err);
       });
+  };
+
+  /** ===== 리스트 가는 function */
+  const goBoardList = (e) => {
+    if (!e && e !== "undefined" && e !== undefined) {
+      e.preventDefault();
+    }
+    console.log("Detail : 넘기는 값", urlParamData);
+    navigate(`/`, { state: urlParamData });
   };
 
   if (!board) {
@@ -101,13 +110,19 @@ function BoardDetailPage() {
         </table>
 
         <div className="btn-box r">
-          <a href="#" className="btn btn-green">
+          <a href="#!" className="btn btn-green">
             수정
           </a>
-          <a href="#" className="btn btn-red">
+          <a href="#!" className="btn btn-red">
             삭제
           </a>
-          <a href="#" className="btn btn-default">
+          <a
+            href="#!"
+            className="btn btn-default"
+            onClick={(e) => {
+              goBoardList(e);
+            }}
+          >
             목록
           </a>
         </div>

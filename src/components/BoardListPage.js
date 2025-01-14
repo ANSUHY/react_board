@@ -8,16 +8,10 @@ function BoardListPage() {
   /** ===== url매칭을 하기 위함 */
   const navigate = useNavigate();
 
-  /** ===== 디테일 가는 function */
-  const goBoardDetail = (boardNo, e) => {
-    e.preventDefault();
-    let param = "targetBoardNo=" + boardNo;
-    navigate(`/detail?${param}`, { state: paramData });
-  };
-
   /** ===== state로 넘어온 값 */
-  const location = useLocation();
-  let urlParamData = location.state;
+  const { state } = useLocation();
+  const urlParamData = state;
+  console.log("List : state로 넘어온 값 ", urlParamData);
 
   /** ===== state 지정 */
   let [ctgCodeList, setCtgCodeList] = useState([]);
@@ -49,7 +43,7 @@ function BoardListPage() {
     console.log("============getBoardList");
 
     setCurrPage(chagePage);
-    console.log(searchParamData);
+
     //검색 param과 페이징 더해줌
     const param = {
       ...searchParamData,
@@ -66,8 +60,6 @@ function BoardListPage() {
       params: param,
     })
       .then((res) => {
-        console.log(res.data.list);
-        console.log(res.data.totalCount);
         //총개수 셋팅
         tempCnt = res.data.totalCount;
 
@@ -101,7 +93,6 @@ function BoardListPage() {
       params: param,
     })
       .then((res) => {
-        console.log(res.data);
         if (res.data.size !== 0) {
           setCtgCodeList(res.data);
         }
@@ -115,6 +106,14 @@ function BoardListPage() {
     setBoards(tempBoards);
   };
 
+  /** ===== 디테일 가는 function */
+  const goBoardDetail = (boardNo, e) => {
+    e.preventDefault();
+    let param = "targetBoardNo=" + boardNo;
+    console.log("List : 넘기는 값", paramData);
+    navigate(`/detail?${param}`, { state: paramData });
+  };
+
   useEffect(() => {
     getCodeList("CTG");
   }, []);
@@ -123,8 +122,7 @@ function BoardListPage() {
     // boardList 가져오기
     getBoardList(currPage);
 
-    // state 를 없앰
-    navigate(location.pathname, {});
+    //navigate(location.pathname, {});
   }, [currPage, rowCount]);
 
   return (
