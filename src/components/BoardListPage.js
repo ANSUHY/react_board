@@ -4,12 +4,16 @@ import { useLocation, useNavigate } from "react-router-dom";
 import imgNew from "../assets/images/new.gif";
 import Pagination from "../components/common/Pagination";
 
-/** Context지정 */
-export const BoardListAshContext = createContext(null);
-
 function BoardListPage() {
   /** ===== url매칭을 하기 위함 */
   const navigate = useNavigate();
+
+  /** ===== 디테일 가는 function */
+  const goBoardDetail = (boardNo, e) => {
+    e.preventDefault();
+    let param = "targetBoardNo=" + boardNo;
+    navigate(`/detail?${param}`, { state: paramData });
+  };
 
   /** ===== state로 넘어온 값 */
   const location = useLocation();
@@ -228,26 +232,39 @@ function BoardListPage() {
           </tr>
         </thead>
         <tbody>
-          {boards?.map((board) => (
-            <tr key={board.boardNo}>
-              <td>{board.rowNum}</td>
-              <td>{board.categoryNm}</td>
-              <td className="l">
-                <a href="#!">
-                  {board.title}
-                  {board.new_yn ? <img src={imgNew} className={"new"} /> : ""}
-                </a>
+          {totCnt === 0 ? (
+            <tr>
+              <td colSpan="4" className="no-data">
+                데이터가 없습니다
               </td>
-              <td>
-                <a href="#!" className={"ic-file"}>
-                  파일
-                </a>
-              </td>
-              <td>{board.writerNm}</td>
-              <td>{board.viewCnt}</td>
-              <td>{board.regDt}</td>
             </tr>
-          ))}
+          ) : (
+            boards.map((board) => (
+              <tr
+                key={board.boardNo}
+                onClick={(e) => {
+                  goBoardDetail(board.boardNo, e);
+                }}
+              >
+                <td>{board.rowNum}</td>
+                <td>{board.categoryNm}</td>
+                <td className="l">
+                  <a href="#!">
+                    {board.title}
+                    {board.new_yn ? <img src={imgNew} className={"new"} /> : ""}
+                  </a>
+                </td>
+                <td>
+                  <a href="#!" className={"ic-file"}>
+                    파일
+                  </a>
+                </td>
+                <td>{board.writerNm}</td>
+                <td>{board.viewCnt}</td>
+                <td>{board.regDt}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 

@@ -8,6 +8,7 @@ import Lnav from "./components/layout/Lnav";
 import Rnav from "./components/layout/Rnav";
 import BoardListPage from "./components/BoardListPage";
 import SubHeader from "./components/layout/SubHeader";
+import BoardDetailPage from "./components/BoardDetailPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <SubHeader />
             <Routes>
               <Route path="/" element={<BoardListPage />} />
+              <Route path="/detail" element={<BoardDetailPage />} />
             </Routes>
           </div>
           {/* <!-- /contents --> */}
@@ -28,8 +30,9 @@ function App() {
         {/* <!-- /container --> */}
 
         <Rnav />
+        <Bottom />
       </div>
-      <Bottom />
+      {/* <!-- /wrap --> */}
     </BrowserRouter>
   );
 }
