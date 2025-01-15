@@ -5,7 +5,7 @@ import imgNew from "../assets/images/new.gif";
 import Pagination from "../components/common/Pagination";
 
 /** Context지정 */
-export const BoardListAshContext = createContext(null);
+//export const BoardListAshContext = createContext(null);
 
 function BoardDetailPage() {
   /** ===== url매칭을 하기 위함 */
@@ -22,19 +22,6 @@ function BoardDetailPage() {
 
   /** ===== state 지정 */
   let [board, setBoard] = useState(); //게시글데이터
-
-  useEffect(() => {
-    //boardNo가 없을경우
-    if (!targetBoardNo) {
-      alert("잘못된 접근입니다.");
-      navigate(-1);
-    }
-
-    //디테일 가져오기
-    getBoardDetail();
-
-    //let payloadString = Object.entries(searchParams).map(e => e.join('=')).join('&');
-  }, []);
 
   /** ===== 디테일 가져오는 function */
   const getBoardDetail = () => {
@@ -62,6 +49,32 @@ function BoardDetailPage() {
     console.log("Detail : 넘기는 값", urlParamData);
     navigate(`/`, { state: urlParamData });
   };
+
+  /** ===== 파일 다운로드 function */
+  const downloadFile = async (fileNo) => {
+    console.log("============downloadFile");
+
+    const url = `http://localhost:8080/api/file/download?fileNo=${fileNo}`;
+    const download = document.createElement("a");
+
+    download.href = url;
+    download.setAttribute("fileNo", fileNo);
+    download.setAttribute("type", "application/json");
+    download.click();
+  };
+
+  useEffect(() => {
+    //boardNo가 없을경우
+    if (!targetBoardNo) {
+      alert("잘못된 접근입니다.");
+      navigate(-1);
+    }
+
+    //디테일 가져오기
+    getBoardDetail();
+
+    //let payloadString = Object.entries(searchParams).map(e => e.join('=')).join('&');
+  }, []);
 
   if (!board) {
     return <div>로딩중입니다...</div>;
@@ -97,13 +110,16 @@ function BoardDetailPage() {
             <tr>
               <th className="fir">첨부파일</th>
               <td colSpan="3">
-                <span>
-                  <a href="#">상담내역1.xlsx</a>
-                </span>
-                <br />
-                <span>
-                  <a href="#">상담내역2.xlsx</a>
-                </span>
+                {board.fileList.size === 0
+                  ? ""
+                  : board.fileList.map((file) => (
+                      <span key={file.fileNo}>
+                        <a href="#!" onClick={() => downloadFile(file.fileNo)}>
+                          {file.originFileNm}
+                        </a>
+                        <br />
+                      </span>
+                    ))}
               </td>
             </tr>
           </tbody>

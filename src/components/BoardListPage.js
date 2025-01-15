@@ -85,8 +85,6 @@ function BoardListPage() {
     //검색 param과 페이징 더해줌
     const param = { grpCd: grpCd };
 
-    let tempCnt = 0;
-    let tempBoards = [];
     await axios({
       method: "get",
       url: `http://localhost:8080/api/comm/code/list?`,
@@ -101,9 +99,6 @@ function BoardListPage() {
         console.log("getCodeList : 실패함");
         console.log(err);
       });
-
-    setTotCnt(tempCnt);
-    setBoards(tempBoards);
   };
 
   /** ===== 디테일 가는 function */
@@ -112,6 +107,14 @@ function BoardListPage() {
     let param = "targetBoardNo=" + boardNo;
     console.log("List : 넘기는 값", paramData);
     navigate(`/detail?${param}`, { state: paramData });
+  };
+
+  /** ===== 저장 가는 function */
+  const goBoardReg = (boardNo, e) => {
+    e.preventDefault();
+    let param = "targetBoardNo=" + boardNo;
+    console.log("List : 넘기는 값", paramData);
+    navigate(`/reg?${param}`, { state: paramData });
   };
 
   useEffect(() => {
@@ -249,13 +252,21 @@ function BoardListPage() {
                 <td className="l">
                   <a href="#!">
                     {board.title}
-                    {board.new_yn ? <img src={imgNew} className={"new"} /> : ""}
+                    {board.newYn === "Y" ? (
+                      <img src={imgNew} className={"new"} />
+                    ) : (
+                      ""
+                    )}
                   </a>
                 </td>
                 <td>
-                  <a href="#!" className={"ic-file"}>
-                    파일
-                  </a>
+                  {board.fileYn === "Y" ? (
+                    <a href="#!" className={"ic-file"}>
+                      파일
+                    </a>
+                  ) : (
+                    ""
+                  )}
                 </td>
                 <td>{board.writerNm}</td>
                 <td>{board.viewCnt}</td>
@@ -294,7 +305,13 @@ function BoardListPage() {
       )}
 
       <div className="btn-box l mt30">
-        <a href="#" className="btn btn-green fr">
+        <a
+          href="#!"
+          className="btn btn-green fr"
+          onClick={(e) => {
+            goBoardReg("", e);
+          }}
+        >
           등록
         </a>
       </div>

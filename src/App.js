@@ -9,6 +9,7 @@ import Rnav from "./components/layout/Rnav";
 import BoardListPage from "./components/BoardListPage";
 import SubHeader from "./components/layout/SubHeader";
 import BoardDetailPage from "./components/BoardDetailPage";
+import BoardRegPage from "./components/BoardRegPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Routes>
               <Route path="/" element={<BoardListPage />} />
               <Route path="/detail" element={<BoardDetailPage />} />
+              <Route path="/reg" element={<BoardRegPage />} />
             </Routes>
           </div>
           {/* <!-- /contents --> */}
