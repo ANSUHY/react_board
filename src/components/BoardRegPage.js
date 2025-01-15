@@ -18,12 +18,13 @@ function BoardRegPage() {
   /** ===== state로 넘어온 값 */
   const { state } = useLocation();
   const urlParamData = state;
+  console.log("Reg : state로 넘어온 값 ", urlParamData);
 
   /** ===== state 지정 */
   let [board, setBoard] = useState({
     writerNm: "",
     password: "",
-    categoryCd: "CTG002",
+    categoryCd: "CTG001",
     title: "",
     cont: "",
     listFileFile: [],
@@ -35,20 +36,9 @@ function BoardRegPage() {
   /** ===== ref 지정 */
   const inputRef = useRef([]);
 
-  /** ===== mount되면 */
-  useEffect(() => {
-    if (targetBoardNo) {
-      //디테일 가져오기
-      getBoardDetail();
-    }
-  }, []);
-
   /** ===== 리스트 가는 function */
   const goBoardList = (e) => {
-    if (!e && e !== "undefined" && e !== undefined) {
-      e.preventDefault();
-    }
-
+    e.preventDefault();
     navigate(`/`, { state: urlParamData });
   };
 
@@ -87,9 +77,8 @@ function BoardRegPage() {
   const saveBoard = async (e) => {
     console.log("============saveBoard");
 
-    if (!e && e !== "undefined" && e !== undefined) {
-      e.preventDefault();
-    }
+    e.preventDefault();
+
     // [[1]]. 유효성 검사
     if (!chkValidation()) {
       return;
@@ -199,6 +188,8 @@ function BoardRegPage() {
   const addDelFileSet = async (e) => {
     console.log("============addDelFileSet");
 
+    e.preventDefault();
+
     let id = e.target.id;
     let arrId = id.split("___");
     let file_list_type = arrId[0]; //file_list_type
@@ -248,6 +239,9 @@ function BoardRegPage() {
 
   useEffect(() => {
     getCodeList("CTG");
+
+    //디테일 가져오기
+    getBoardDetail();
   }, []);
 
   if (!board) {
@@ -348,8 +342,8 @@ function BoardRegPage() {
               </th>
               <td colSpan="3">
                 <span>
-                  <a href="#">상담내역1.xlsx</a>
-                  <a href="#" className="ic-del">
+                  <a href="{() => false}">상담내역1.xlsx</a>
+                  <a href="{() => false}" className="ic-del">
                     삭제
                   </a>
                 </span>
@@ -361,8 +355,8 @@ function BoardRegPage() {
               <th className="fir">첨부파일 2</th>
               <td colSpan="3">
                 <span>
-                  <a href="#">상담내역2.xlsx</a>
-                  <a href="#" className="ic-del">
+                  <a href="{() => false}">상담내역2.xlsx</a>
+                  <a href="{() => false}" className="ic-del">
                     삭제
                   </a>
                 </span>
@@ -376,7 +370,10 @@ function BoardRegPage() {
                 <input
                   type="file"
                   className="input block mt10"
-                  onChange={(e) => setArrAddFile(e.target.files)}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setArrAddFile(e.target.files);
+                  }}
                 />
               </td>
             </tr>
@@ -385,7 +382,7 @@ function BoardRegPage() {
 
         <div className="btn-box r">
           <a
-            href="#!"
+            href="{() => false}"
             onClick={(e) => {
               saveBoard(e);
             }}
@@ -394,8 +391,9 @@ function BoardRegPage() {
             {targetBoardNo ? "수정" : "등록"}
           </a>
           <a
-            href="#!"
+            href="{() => false}"
             onClick={(e) => {
+              e.preventDefault();
               goBoardList(e);
             }}
             className="btn btn-default"

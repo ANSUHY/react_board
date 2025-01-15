@@ -1,8 +1,6 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import imgNew from "../assets/images/new.gif";
-import Pagination from "../components/common/Pagination";
 
 /** Context지정 */
 //export const BoardListAshContext = createContext(null);
@@ -43,11 +41,17 @@ function BoardDetailPage() {
 
   /** ===== 리스트 가는 function */
   const goBoardList = (e) => {
-    if (!e && e !== "undefined" && e !== undefined) {
-      e.preventDefault();
-    }
+    e.preventDefault();
     console.log("Detail : 넘기는 값", urlParamData);
     navigate(`/`, { state: urlParamData });
+  };
+
+  /** ===== Reg 가는 function */
+  const goBoardReg = (e) => {
+    e.preventDefault();
+    let param = "targetBoardNo=" + targetBoardNo;
+    console.log("Detail : 넘기는 값", urlParamData);
+    navigate(`/reg?${param}`, { state: urlParamData });
   };
 
   /** ===== 파일 다운로드 function */
@@ -114,7 +118,10 @@ function BoardDetailPage() {
                   ? ""
                   : board.fileList.map((file) => (
                       <span key={file.fileNo}>
-                        <a href="#!" onClick={() => downloadFile(file.fileNo)}>
+                        <a
+                          href="{() => false}"
+                          onClick={() => downloadFile(file.fileNo)}
+                        >
                           {file.originFileNm}
                         </a>
                         <br />

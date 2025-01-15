@@ -9,28 +9,46 @@ function BoardListPage() {
   const navigate = useNavigate();
 
   /** ===== state로 넘어온 값 */
-  const { state } = useLocation();
-  const urlParamData = state;
+  const location = useLocation();
+  let urlParamData = location.state;
   console.log("List : state로 넘어온 값 ", urlParamData);
 
   /** ===== state 지정 */
   let [ctgCodeList, setCtgCodeList] = useState([]);
   let [boards, setBoards] = useState([]); //게시글데이터들
   let [totCnt, setTotCnt] = useState(0); //검색한 전체 게시글수
-  let [rowCount, setRowCount] = useState(10); //한페이지에 나올수
+
+  let [rowCount, setRowCount] = useState(
+    urlParamData && urlParamData["rowCount"] ? urlParamData["rowCount"] : 10
+  ); //한페이지에 나올수
   let [currPage, setCurrPage] = useState(
     urlParamData && urlParamData["currPage"] ? urlParamData["currPage"] : 1
   ); //현재 페이지
+  let [searchOrder, setSearchOrder] = useState(
+    urlParamData && urlParamData["searchOrder"]
+      ? urlParamData["searchOrder"]
+      : "order1"
+  ); //정렬 순서
 
   let [searchParamData, setSearchParamData] = useState({
-    categoryCd: "",
-    searchKeyword: "all",
-    searchOrder: "order1",
+    categoryCd:
+      urlParamData && urlParamData["categoryCd"]
+        ? urlParamData["categoryCd"]
+        : "",
+    searchKeyword:
+      urlParamData && urlParamData["searchKeyword"]
+        ? urlParamData["searchKeyword"]
+        : "all",
+    searchText:
+      urlParamData && urlParamData["searchText"]
+        ? urlParamData["searchText"]
+        : "",
   }); //검색param
   let [paramData, setParamData] = useState(); //최종param
 
   /* 변경되었을 경우 set */
   const handleChage = (e) => {
+    e.preventDefault();
     const { name, value } = e.target;
     setSearchParamData((prevValues) => ({
       ...prevValues,
@@ -42,13 +60,17 @@ function BoardListPage() {
   const getBoardList = async (chagePage) => {
     console.log("============getBoardList");
 
-    setCurrPage(chagePage);
+    //검색어 조건 리셋(url에 있는 조건)
+    if (location.state != null) {
+      await navigate(location.pathname, {});
+    }
 
     //검색 param과 페이징 더해줌
     const param = {
       ...searchParamData,
       rowCount: rowCount,
       currPage: chagePage,
+      searchOrder: searchOrder,
     };
     setParamData(param);
 
@@ -109,7 +131,7 @@ function BoardListPage() {
     navigate(`/detail?${param}`, { state: paramData });
   };
 
-  /** ===== 저장 가는 function */
+  /** ===== Reg 가는 function */
   const goBoardReg = (boardNo, e) => {
     e.preventDefault();
     let param = "targetBoardNo=" + boardNo;
@@ -118,15 +140,24 @@ function BoardListPage() {
   };
 
   useEffect(() => {
+    /* //검색어 조건 유지(url에 있는 조건)
+    Object.keys(searchParamData).forEach((key) => {
+      if (urlParamData && urlParamData[key]) {
+        setSearchParamData((prevValues) => ({
+          ...prevValues,
+          [key]: urlParamData[key],
+        }));
+      }
+    }); */
+
+    //공통코드 조회
     getCodeList("CTG");
   }, []);
 
   useEffect(() => {
     // boardList 가져오기
     getBoardList(currPage);
-
-    //navigate(location.pathname, {});
-  }, [currPage, rowCount]);
+  }, [currPage, rowCount, searchOrder]);
 
   return (
     <>
@@ -145,6 +176,7 @@ function BoardListPage() {
                   style={{ width: "150px" }}
                   name="categoryCd"
                   onChange={handleChage}
+                  value={searchParamData.categoryCd}
                 >
                   <option value="">전체</option>
                   {ctgCodeList?.map((code) => (
@@ -163,6 +195,7 @@ function BoardListPage() {
                   style={{ width: "150px" }}
                   name="searchKeyword"
                   onChange={handleChage}
+                  value={searchParamData.searchKeyword}
                 >
                   <option value="all">전체</option>
                   <option value="title">제목</option>
@@ -174,6 +207,7 @@ function BoardListPage() {
                   style={{ width: "300px" }}
                   name="searchText"
                   onChange={handleChage}
+                  value={searchParamData.searchText}
                 />
               </td>
             </tr>
@@ -182,7 +216,7 @@ function BoardListPage() {
       </div>
       <div className="btn-box btm l">
         <a
-          href="#!"
+          href="{() => false}"
           className="btn btn-red fr"
           onClick={(e) => {
             e.preventDefault();
@@ -203,7 +237,12 @@ function BoardListPage() {
             className="select"
             style={{ width: "120px" }}
             name="searchOrder"
-            onChange={handleChage}
+            onChange={(e) => {
+              e.preventDefault();
+              setSearchOrder(e.target.value);
+              setCurrPage(1);
+            }}
+            value={searchOrder}
           >
             <option value="order1">최근 작성일</option>
             <option value="order2">조회수</option>
@@ -235,7 +274,7 @@ function BoardListPage() {
         <tbody>
           {totCnt === 0 ? (
             <tr>
-              <td colSpan="4" className="no-data">
+              <td colSpan="7" className="no-data">
                 데이터가 없습니다
               </td>
             </tr>
@@ -244,13 +283,14 @@ function BoardListPage() {
               <tr
                 key={board.boardNo}
                 onClick={(e) => {
+                  e.preventDefault();
                   goBoardDetail(board.boardNo, e);
                 }}
               >
                 <td>{board.rowNum}</td>
                 <td>{board.categoryNm}</td>
                 <td className="l">
-                  <a href="#!">
+                  <a href="{() => false}">
                     {board.title}
                     {board.newYn === "Y" ? (
                       <img src={imgNew} className={"new"} />
@@ -261,7 +301,7 @@ function BoardListPage() {
                 </td>
                 <td>
                   {board.fileYn === "Y" ? (
-                    <a href="#!" className={"ic-file"}>
+                    <a href="{() => false}" className={"ic-file"}>
                       파일
                     </a>
                   ) : (
@@ -293,9 +333,11 @@ function BoardListPage() {
               className="select"
               style={{ width: "120px" }}
               onChange={(e) => {
+                e.preventDefault();
                 setRowCount(e.target.value);
                 setCurrPage(1);
               }}
+              value={rowCount}
             >
               <option value="10">10개씩보기</option>
               <option value="30">30개씩보기</option>
@@ -306,9 +348,10 @@ function BoardListPage() {
 
       <div className="btn-box l mt30">
         <a
-          href="#!"
+          href="{() => false}"
           className="btn btn-green fr"
           onClick={(e) => {
+            e.preventDefault();
             goBoardReg("", e);
           }}
         >
