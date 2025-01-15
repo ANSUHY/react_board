@@ -134,9 +134,8 @@ function BoardListPage() {
   /** ===== Reg 가는 function */
   const goBoardReg = (boardNo, e) => {
     e.preventDefault();
-    let param = "targetBoardNo=" + boardNo;
     console.log("List : 넘기는 값", paramData);
-    navigate(`/reg?${param}`, { state: paramData });
+    navigate(`/reg`, { state: paramData });
   };
 
   useEffect(() => {

@@ -55,16 +55,30 @@ function BoardDetailPage() {
   };
 
   /** ===== 파일 다운로드 function */
-  const downloadFile = async (fileNo) => {
+  const downloadFile = async (e, fileNo, fileName) => {
     console.log("============downloadFile");
 
-    const url = `http://localhost:8080/api/file/download?fileNo=${fileNo}`;
-    const download = document.createElement("a");
+    e.preventDefault();
 
-    download.href = url;
-    download.setAttribute("fileNo", fileNo);
-    download.setAttribute("type", "application/json");
-    download.click();
+    axios({
+      method: "get",
+      url: `http://localhost:8080/api/file/download?fileNo=${fileNo}`,
+      responseType: "blob",
+    })
+      .then((res) => {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch((err) => {
+        console.log("downloadFile : 실패함");
+        console.log(err);
+      });
   };
 
   useEffect(() => {
@@ -120,7 +134,9 @@ function BoardDetailPage() {
                       <span key={file.fileNo}>
                         <a
                           href="{() => false}"
-                          onClick={() => downloadFile(file.fileNo)}
+                          onClick={(e) =>
+                            downloadFile(e, file.fileNo, file.originFileNm)
+                          }
                         >
                           {file.originFileNm}
                         </a>

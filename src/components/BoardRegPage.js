@@ -27,11 +27,10 @@ function BoardRegPage() {
     categoryCd: "CTG001",
     title: "",
     cont: "",
-    listFileFile: [],
+    fileList: [],
   }); //게시글데이터
   let [ctgCodeList, setCtgCodeList] = useState([]);
-  let [arrAddFile, setArrAddFile] = useState(null); //추가하는 파일_file 리스트
-  let [delFileNo, setArrDelFileSn] = useState([]); //삭제하는 파일EncodeSn 리스트
+  let [arrAddFile, setArrAddFile] = useState([null, null, null]); //추가하는 파일_file 리스트
 
   /** ===== ref 지정 */
   const inputRef = useRef([]);
@@ -42,7 +41,7 @@ function BoardRegPage() {
     navigate(`/`, { state: urlParamData });
   };
 
-  /** ===== board데이터 셋팅 변경 function */
+  /** ===== board데이터 변경 function */
   const settingBoardData = (e) => {
     const { name, value } = e.target;
     setBoard((prevValues) => ({
@@ -53,23 +52,19 @@ function BoardRegPage() {
 
   /** ===== 디테일 가져오는 function */
   const getBoardDetail = () => {
+    console.log("============getBoardDetail", targetBoardNo);
+
     axios({
       method: "get",
-      url: `http://localhost:18083/board/${targetBoardNo}`,
+      url: `http://localhost:8080/api/board/detail/${targetBoardNo}`,
     })
       .then((res) => {
-        if (res.data.resultCode === 200) {
-          //board 셋팅
-          setBoard(res.data.data);
-        } else {
-          //데이터가 올바르지않거나 오류가 있을경우 뒤로가기
-
-          alert(res.data.resultMessage);
-          navigate(-1);
-        }
+        //board 셋팅
+        setBoard(res.data);
       })
-      .catch(() => {
+      .catch((err) => {
         console.log("getBoardDetail : 실패함");
+        console.log(err);
       });
   };
 
@@ -87,16 +82,23 @@ function BoardRegPage() {
     // [[2]]. 데이터 셋팅
     let fd = new FormData();
 
-    /* 2-1. 파일_file */
+    /* 2-1. 파일_file (추가할 파일 셋팅 + 삭제할 파일No 셋팅)*/
+    let arrDelFileNo = [];
     if (arrAddFile != null) {
       for (let i = 0; i < arrAddFile.length; i++) {
-        fd.append("board_file", arrAddFile[i]);
+        if (arrAddFile[i] != null) {
+          // 추가할 파일 셋팅
+          fd.append("boardFile", arrAddFile[i]);
+          // 삭제할 파일 no 셋팅
+          if (board.fileList.size > i + 1 && board.fileList[i]) {
+            arrAddFile.put(board.fileList[i].fileNo);
+          }
+        }
       }
     }
-    /* 2-2. 삭제할 파일 */
-    fd.append("arrdelFileNo", delFileNo);
+    fd.append("delFileList", arrDelFileNo);
 
-    /* 2-3. board정보 */
+    /* 2-2. board정보 */
     Object.keys(board).forEach((key) => {
       fd.append(key, board[key]); //타입
     });
@@ -159,24 +161,20 @@ function BoardRegPage() {
   };
 
   /** ===== 파일 바로 삭제 function */
-  const deleteFile = async (encodeFileSn) => {
+  const deleteFile = async (e, boardNo) => {
     console.log("============deleteFile");
+
+    e.preventDefault();
 
     if (window.confirm("삭제 하시겠습니까?")) {
       await axios
-        .post(`http://localhost:18083/file/deleteFile`, null, {
+        .delete(`http://localhost:8080/api/delete`, null, {
           headers: { "content-type": "application/json" },
-          params: { encodeFileSn: encodeFileSn },
+          params: { boardNo: boardNo },
         })
         .then((res) => {
-          if (res.data.resultCode === 200) {
-            //화면 재로딩
-            window.location.reload();
-          } else {
-            // 오류가 있을경우
-
-            alert(res.data.resultMessage);
-          }
+          //화면 재로딩
+          window.location.reload();
         })
         .catch(() => {
           console.log("deleteFile : 실패함");
@@ -184,35 +182,20 @@ function BoardRegPage() {
     }
   };
 
-  /** ===== 파일 저장시에 삭제 function ( 저장시에 삭제할 파일 셋팅 + 파일 안보이게 하기)  */
-  const addDelFileSet = async (e) => {
-    console.log("============addDelFileSet");
-
+  /** ===== 파일 변경 function */
+  const settingFileData = (seqNo, e) => {
     e.preventDefault();
+    const tempArrFile = arrAddFile.map((file, i) => {
+      console.log("aaaaaaaaaaaaaa");
+      if (i === seqNo) {
+        return e.target.files[0];
+      } else {
+        return file;
+      }
+    });
 
-    let id = e.target.id;
-    let arrId = id.split("___");
-    let file_list_type = arrId[0]; //file_list_type
-    let encodeFileSn = arrId[1]; //암호화된 파일 번호
-
-    // [[1]]. 화면에서 삭제
-    // 1-1. 지울 파일 수정해서 넣기
-    let tempListFile = board[file_list_type];
-    tempListFile = tempListFile.filter(
-      (element) => element["encodeFileSn"] !== encodeFileSn
-    );
-    let tempBoard = { ...board };
-    tempBoard[file_list_type] = tempListFile;
-
-    // 1-2. board에 셋팅
-    setBoard(tempBoard);
-
-    // [[2]]. 지울 파일 셋팅하기
-    delFileNo.push(encodeFileSn);
-    setArrDelFileSn(delFileNo);
+    setArrAddFile(tempArrFile);
   };
-
-  /** ===== 파일 LIST에 추가 AAAAAAAAASH*/
 
   /** ===== 공통코드 가져오는 function */
   let getCodeList = async (grpCd) => {
@@ -240,8 +223,10 @@ function BoardRegPage() {
   useEffect(() => {
     getCodeList("CTG");
 
-    //디테일 가져오기
-    getBoardDetail();
+    if (targetBoardNo) {
+      //디테일 가져오기
+      getBoardDetail();
+    }
   }, []);
 
   if (!board) {
@@ -342,13 +327,19 @@ function BoardRegPage() {
               </th>
               <td colSpan="3">
                 <span>
-                  <a href="{() => false}">상담내역1.xlsx</a>
+                  <a href="{() => false}">상담내역2.xlsx</a>
                   <a href="{() => false}" className="ic-del">
                     삭제
                   </a>
                 </span>
                 <br />
-                <input type="file" className="input block mt10" />
+                <input
+                  type="file"
+                  className="input block mt10"
+                  onChange={(e) => {
+                    settingFileData(0, e);
+                  }}
+                />
               </td>
             </tr>
             <tr>
@@ -361,7 +352,13 @@ function BoardRegPage() {
                   </a>
                 </span>
                 <br />
-                <input type="file" className="input block mt10" />
+                <input
+                  type="file"
+                  className="input block mt10"
+                  onChange={(e) => {
+                    settingFileData(1, e);
+                  }}
+                />
               </td>
             </tr>
             <tr>
@@ -371,8 +368,7 @@ function BoardRegPage() {
                   type="file"
                   className="input block mt10"
                   onChange={(e) => {
-                    e.preventDefault();
-                    setArrAddFile(e.target.files);
+                    settingFileData(2, e);
                   }}
                 />
               </td>
