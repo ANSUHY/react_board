@@ -138,6 +138,13 @@ function BoardListPage() {
     navigate(`/reg`, { state: paramData });
   };
 
+  /** ===== 엔터 눌렸을때 사용 */
+  const handleOnKeyPress = (e) => {
+    if (e.key === "Enter") {
+      getBoardList(1); // Enter 입력이 되면 검색이벤트 실행
+    }
+  };
+
   useEffect(() => {
     /* 
     위에서 다 해결함===========
@@ -209,6 +216,7 @@ function BoardListPage() {
                   name="searchText"
                   onChange={handleChage}
                   value={searchParamData.searchText}
+                  onKeyDown={(e) => handleOnKeyPress(e)}
                 />
               </td>
             </tr>
