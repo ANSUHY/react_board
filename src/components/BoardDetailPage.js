@@ -164,7 +164,9 @@ function BoardDetailPage() {
             </tr>
             <tr>
               <th className="fir">내용</th>
-              <td colSpan="3">{board.cont}</td>
+              <td colSpan="3">
+                <pre>{board.cont}</pre>
+              </td>
             </tr>
             <tr>
               <th className="fir">첨부파일</th>
