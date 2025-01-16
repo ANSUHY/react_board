@@ -15,7 +15,7 @@ function BoardRegPage() {
   const [searchParams] = useSearchParams();
   let targetBoardNo = searchParams.get("targetBoardNo");
 
-  /** ===== state로 넘어온 값 */
+  /** ===== state로 넘어온 값 AAAAAAAAAASH이거 []에 넣어보기*/
   const { state } = useLocation();
   const urlParamData = state;
   console.log("Reg : state로 넘어온 값 ", urlParamData);
@@ -31,6 +31,8 @@ function BoardRegPage() {
   }); //게시글데이터
   let [ctgCodeList, setCtgCodeList] = useState([]);
   let [arrAddFile, setArrAddFile] = useState([null, null, null]); //추가하는 파일_file 리스트
+
+  let fileReqCnt = 3;
 
   /** ===== ref 지정 */
   const inputRef = useRef([]);
@@ -103,22 +105,33 @@ function BoardRegPage() {
       fd.append(key, board[key]); //타입
     });
 
+    let url = "";
+    let method = "";
+
     if (targetBoardNo) {
-      //boardNo
+      /* 수정 */
       fd.append("boardNo", targetBoardNo);
+      url = `http://localhost:8080/api/board/update`;
+      method = "put";
+    } else {
+      /* 새로운것 */
+      url = `http://localhost:8080/api/board/insert`;
+      method = "post";
     }
 
     // [[3]]. 저장 및 수정
-    await axios
-      .post(`http://localhost:8080/api/board/insert`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+    await axios({
+      method: method,
+      url: url,
+      data: fd,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
       .then((res) => {
         if (targetBoardNo) {
           //수정이면
           //디테일로 가기
           setArrAddFile(null);
-          navigate(`/list?targetBoardNo=${targetBoardNo}`);
+          navigate(`/detail?targetBoardNo=${targetBoardNo}`);
         } else {
           //등록이면
           //리스트로 가기
@@ -185,9 +198,13 @@ function BoardRegPage() {
   /** ===== 파일 변경 function */
   const settingFileData = (seqNo, e) => {
     e.preventDefault();
+
+    console.log("bbbbbbbDDb", seqNo);
     const tempArrFile = arrAddFile.map((file, i) => {
       console.log("aaaaaaaaaaaaaa");
       if (i === seqNo) {
+        console.log("CCC");
+        console.log(e.target.files[0]);
         return e.target.files[0];
       } else {
         return file;
@@ -218,6 +235,38 @@ function BoardRegPage() {
         console.log("getCodeList : 실패함");
         console.log(err);
       });
+  };
+
+  /** ===== [jsx반환] : file부분 */
+  const jsxFile = () => {
+    const result = [];
+    for (let i = 0; i < fileReqCnt; i++) {
+      result.push(
+        <tr key={i}>
+          <th className="fir">
+            첨부파일 {i + 1} {i === 0 ? <i className="req">*</i> : ""}
+          </th>
+          <td colSpan="3">
+            <span>
+              <a href="{() => false}">상담내역2.xlsx</a>
+              <a href="{() => false}" className="ic-del">
+                삭제
+              </a>
+            </span>
+            <br />
+            <input
+              type="file"
+              className="input block mt10"
+              onChange={(e) => {
+                settingFileData(i, e);
+              }}
+            />
+          </td>
+        </tr>
+      );
+    }
+
+    return result;
   };
 
   useEffect(() => {
@@ -321,6 +370,7 @@ function BoardRegPage() {
                 />
               </td>
             </tr>
+            {jsxFile()}
             <tr>
               <th className="fir">
                 첨부파일 1 <i className="req">*</i>

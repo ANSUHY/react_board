@@ -149,7 +149,14 @@ function BoardDetailPage() {
         </table>
 
         <div className="btn-box r">
-          <a href="#!" className="btn btn-green">
+          <a
+            href="#!"
+            className="btn btn-green"
+            onClick={(e) => {
+              e.preventDefault();
+              goBoardReg(e);
+            }}
+          >
             수정
           </a>
           <a href="#!" className="btn btn-red">
