@@ -1,8 +1,6 @@
 import axios from "axios";
 import { createContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import imgNew from "../assets/images/new.gif";
-import Pagination from "./common/Pagination";
 
 /** Context지정 */
 export const BoardListAshContext = createContext(null);
@@ -36,6 +34,7 @@ function BoardRegPage() {
 
   /** ===== ref 지정 */
   const inputRef = useRef([]);
+  const fileRef = useRef();
 
   /** ===== 리스트 가는 function */
   const goBoardList = (e) => {
@@ -87,21 +86,28 @@ function BoardRegPage() {
     if (!chkValidation()) {
       return;
     }
+    if (
+      !fileRef.current.value &&
+      !arrAddFile.some(checkValue) &&
+      board.fileList.length === 0
+    ) {
+      alert("파일 한개는 필수입니다.");
+      fileRef.current.focus();
+      return;
+    }
 
     // [[2]]. 데이터 셋팅
     let fd = new FormData();
 
     /* 2-1. 파일_file (추가할 파일 셋팅 + 삭제할 파일No 셋팅)*/
     let arrDelFileNo = [];
-    if (arrAddFile != null) {
-      for (let i = 0; i < arrAddFile.length; i++) {
-        if (arrAddFile[i]) {
-          // 추가할 파일 셋팅
-          fd.append("boardFile", arrAddFile[i]);
-          // 삭제할 파일 no 셋팅
-          if (board.fileList.length > i && board.fileList[i]) {
-            arrDelFileNo.push(board.fileList[i].fileNo);
-          }
+    for (let i = 0; i < arrAddFile.length; i++) {
+      if (arrAddFile[i]) {
+        // 추가할 파일 셋팅
+        fd.append("boardFile", arrAddFile[i]);
+        // 삭제할 파일 no 셋팅
+        if (board.fileList.length > i && board.fileList[i]) {
+          arrDelFileNo.push(board.fileList[i].fileNo);
         }
       }
     }
@@ -258,6 +264,12 @@ function BoardRegPage() {
       });
   };
 
+  const checkValue = (e) => {
+    if (e) {
+      return true;
+    }
+  };
+
   /** ===== [jsx반환] : file부분 */
   const jsxFile = () => {
     const result = [];
@@ -293,13 +305,24 @@ function BoardRegPage() {
                 ""
               )
             )}
-            <input
-              type="file"
-              className="input block mt10"
-              onChange={(e) => {
-                settingFileData(idx, e);
-              }}
-            />
+            {idx === 0 ? (
+              <input
+                type="file"
+                className="input block mt10"
+                onChange={(e) => {
+                  settingFileData(idx, e);
+                }}
+                ref={fileRef}
+              />
+            ) : (
+              <input
+                type="file"
+                className="input block mt10"
+                onChange={(e) => {
+                  settingFileData(idx, e);
+                }}
+              />
+            )}
           </td>
         </tr>
       );
