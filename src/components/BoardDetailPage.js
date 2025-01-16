@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import ModalPwd from "./common/ModalPwd";
 
 /** Context지정 */
 //export const BoardListAshContext = createContext(null);
@@ -20,6 +21,18 @@ function BoardDetailPage() {
 
   /** ===== state 지정 */
   let [board, setBoard] = useState(); //게시글데이터
+  let [modalPwdOpen, setModalPwdOpen] = useState(false); //modalOpen
+  let [modalPwdAfterName, setModalPwdAfterName] = useState(); //모달하고난뒤에 FN
+
+  const openModalPwd = (e, fnName) => {
+    e.preventDefault();
+    setModalPwdOpen(true);
+    setModalPwdAfterName(fnName);
+  };
+  const closeModal = (e) => {
+    e.preventDefault();
+    setModalPwdOpen(false);
+  };
 
   /** ===== 디테일 가져오는 function */
   const getBoardDetail = () => {
@@ -48,7 +61,6 @@ function BoardDetailPage() {
 
   /** ===== Reg 가는 function */
   const goBoardReg = (e) => {
-    e.preventDefault();
     let param = "targetBoardNo=" + targetBoardNo;
     console.log("Detail : 넘기는 값", urlParamData);
     navigate(`/reg?${param}`, { state: urlParamData });
@@ -56,8 +68,6 @@ function BoardDetailPage() {
 
   /** ===== board 삭제 function */
   const delBoard = async (e) => {
-    e.preventDefault();
-
     if (window.confirm("삭제 하시겠습니까?")) {
       await axios
         .delete(`http://localhost:8080/api/board/delete/${targetBoardNo}`, {
@@ -119,6 +129,17 @@ function BoardDetailPage() {
   } else {
     return (
       <>
+        {/* pwd 모달팝업 */}
+        <ModalPwd
+          open={modalPwdOpen}
+          close={closeModal}
+          header="비밀번호 확인"
+          modalPwdAfterName={modalPwdAfterName}
+          pwd={board.password}
+          goBoardReg={goBoardReg}
+          delBoard={delBoard}
+        />
+
         <table className="write">
           <colgroup>
             <col style={{ width: "150px" }} />
@@ -167,14 +188,13 @@ function BoardDetailPage() {
             </tr>
           </tbody>
         </table>
-
         <div className="btn-box r">
           <a
             href="#!"
             className="btn btn-green"
             onClick={(e) => {
               e.preventDefault();
-              goBoardReg(e);
+              openModalPwd(e, "reg");
             }}
           >
             수정
@@ -184,7 +204,7 @@ function BoardDetailPage() {
             className="btn btn-red"
             onClick={(e) => {
               e.preventDefault();
-              delBoard(e);
+              openModalPwd(e, "del");
             }}
           >
             삭제
