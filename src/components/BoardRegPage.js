@@ -43,6 +43,13 @@ function BoardRegPage() {
     navigate(`/`, { state: urlParamData });
   };
 
+  /** ===== 디테일 가는 function */
+  const goBoardDetail = (boardNo, e) => {
+    e.preventDefault();
+    let param = "targetBoardNo=" + boardNo;
+    navigate(`/detail?${param}`, { state: urlParamData });
+  };
+
   /** ===== board데이터 변경 function */
   const settingBoardData = (e) => {
     const { name, value } = e.target;
@@ -131,7 +138,9 @@ function BoardRegPage() {
           //수정이면
           //디테일로 가기
           setArrAddFile(null);
-          navigate(`/detail?targetBoardNo=${targetBoardNo}`);
+          navigate(`/detail?targetBoardNo=${targetBoardNo}`, {
+            state: urlParamData,
+          });
         } else {
           //등록이면
           //리스트로 가기
@@ -159,7 +168,6 @@ function BoardRegPage() {
     return isValid;
   };
 
-  /** ===== 파일 다운로드 function */
   /** ===== 파일 다운로드 function */
   const downloadFile = async (e, fileNo, fileName) => {
     console.log("============downloadFile");
@@ -419,7 +427,7 @@ function BoardRegPage() {
             href="{() => false}"
             onClick={(e) => {
               e.preventDefault();
-              goBoardList(e);
+              targetBoardNo ? goBoardDetail(targetBoardNo, e) : goBoardList(e);
             }}
             className="btn btn-default"
           >
