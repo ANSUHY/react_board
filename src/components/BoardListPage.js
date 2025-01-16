@@ -113,7 +113,7 @@ function BoardListPage() {
       params: param,
     })
       .then((res) => {
-        if (res.data.size !== 0) {
+        if (res.data.length !== 0) {
           setCtgCodeList(res.data);
         }
       })
@@ -139,7 +139,9 @@ function BoardListPage() {
   };
 
   useEffect(() => {
-    /* //검색어 조건 유지(url에 있는 조건)
+    /* 
+    위에서 다 해결함===========
+    //검색어 조건 유지(url에 있는 조건)
     Object.keys(searchParamData).forEach((key) => {
       if (urlParamData && urlParamData[key]) {
         setSearchParamData((prevValues) => ({

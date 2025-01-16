@@ -54,6 +54,25 @@ function BoardDetailPage() {
     navigate(`/reg?${param}`, { state: urlParamData });
   };
 
+  /** ===== board 삭제 function */
+  const delBoard = async (e) => {
+    e.preventDefault();
+
+    if (window.confirm("삭제 하시겠습니까?")) {
+      await axios
+        .delete(`http://localhost:8080/api/board/delete/${targetBoardNo}`, {
+          headers: { "content-type": "application/json" },
+        })
+        .then((res) => {
+          //리스트로 가기
+          navigate(`/`);
+        })
+        .catch(() => {
+          console.log("deleteFile : 실패함");
+        });
+    }
+  };
+
   /** ===== 파일 다운로드 function */
   const downloadFile = async (e, fileNo, fileName) => {
     console.log("============downloadFile");
@@ -76,6 +95,7 @@ function BoardDetailPage() {
         document.body.removeChild(a);
       })
       .catch((err) => {
+        alert("파일 다운에 실패했습니다.");
         console.log("downloadFile : 실패함");
         console.log(err);
       });
@@ -128,7 +148,7 @@ function BoardDetailPage() {
             <tr>
               <th className="fir">첨부파일</th>
               <td colSpan="3">
-                {board.fileList.size === 0
+                {board.fileList.length === 0
                   ? ""
                   : board.fileList.map((file) => (
                       <span key={file.fileNo}>
@@ -159,7 +179,14 @@ function BoardDetailPage() {
           >
             수정
           </a>
-          <a href="#!" className="btn btn-red">
+          <a
+            href="#!"
+            className="btn btn-red"
+            onClick={(e) => {
+              e.preventDefault();
+              delBoard(e);
+            }}
+          >
             삭제
           </a>
           <a

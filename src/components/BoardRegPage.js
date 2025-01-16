@@ -15,7 +15,7 @@ function BoardRegPage() {
   const [searchParams] = useSearchParams();
   let targetBoardNo = searchParams.get("targetBoardNo");
 
-  /** ===== state로 넘어온 값 AAAAAAAAAASH이거 []에 넣어보기*/
+  /** ===== state로 넘어온 값 AAAAAAAAAASH이거 useEffect[]에 넣어보기*/
   const { state } = useLocation();
   const urlParamData = state;
   console.log("Reg : state로 넘어온 값 ", urlParamData);
@@ -88,12 +88,12 @@ function BoardRegPage() {
     let arrDelFileNo = [];
     if (arrAddFile != null) {
       for (let i = 0; i < arrAddFile.length; i++) {
-        if (arrAddFile[i] != null) {
+        if (arrAddFile[i]) {
           // 추가할 파일 셋팅
           fd.append("boardFile", arrAddFile[i]);
           // 삭제할 파일 no 셋팅
-          if (board.fileList.size > i + 1 && board.fileList[i]) {
-            arrAddFile.put(board.fileList[i].fileNo);
+          if (board.fileList.length > i && board.fileList[i]) {
+            arrDelFileNo.push(board.fileList[i].fileNo);
           }
         }
       }
@@ -146,9 +146,8 @@ function BoardRegPage() {
   /** ===== 유효성 검사 function */
   const chkValidation = () => {
     let isValid = true;
-    console.log(inputRef.current.length);
+
     for (let i = 0; i < inputRef.current.length; i++) {
-      console.log(inputRef.current[i]);
       if (inputRef.current[i].value === "") {
         alert(inputRef.current[i].name + "는(은) 필수 입력사항입니다.");
         inputRef.current[i].focus();
@@ -161,29 +160,47 @@ function BoardRegPage() {
   };
 
   /** ===== 파일 다운로드 function */
-  const downloadFile = async (encodeFileSn) => {
+  /** ===== 파일 다운로드 function */
+  const downloadFile = async (e, fileNo, fileName) => {
     console.log("============downloadFile");
 
-    const url = `http://localhost:18083/file/downloadFile?encodeFileSn=${encodeFileSn}`;
-    const download = document.createElement("a");
+    e.preventDefault();
 
-    download.href = url;
-    download.setAttribute("encodeFileSn", encodeFileSn);
-    download.setAttribute("type", "application/json");
-    download.click();
+    axios({
+      method: "get",
+      url: `http://localhost:8080/api/file/download?fileNo=${fileNo}`,
+      responseType: "blob",
+    })
+      .then((res) => {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch((err) => {
+        alert("파일 다운에 실패했습니다.");
+        console.log("downloadFile : 실패함");
+        console.log(err);
+      });
   };
 
   /** ===== 파일 바로 삭제 function */
-  const deleteFile = async (e, boardNo) => {
+  const deleteFile = async (e, fileNo) => {
     console.log("============deleteFile");
 
     e.preventDefault();
 
+    let listDelFileNo = [];
+    listDelFileNo.push(fileNo);
+
     if (window.confirm("삭제 하시겠습니까?")) {
       await axios
-        .delete(`http://localhost:8080/api/delete`, null, {
+        .delete(`http://localhost:8080/api/file/delete/${listDelFileNo}`, {
           headers: { "content-type": "application/json" },
-          params: { boardNo: boardNo },
         })
         .then((res) => {
           //화면 재로딩
@@ -199,12 +216,8 @@ function BoardRegPage() {
   const settingFileData = (seqNo, e) => {
     e.preventDefault();
 
-    console.log("bbbbbbbDDb", seqNo);
     const tempArrFile = arrAddFile.map((file, i) => {
-      console.log("aaaaaaaaaaaaaa");
       if (i === seqNo) {
-        console.log("CCC");
-        console.log(e.target.files[0]);
         return e.target.files[0];
       } else {
         return file;
@@ -227,7 +240,7 @@ function BoardRegPage() {
       params: param,
     })
       .then((res) => {
-        if (res.data.size !== 0) {
+        if (res.data.length !== 0) {
           setCtgCodeList(res.data);
         }
       })
@@ -240,25 +253,43 @@ function BoardRegPage() {
   /** ===== [jsx반환] : file부분 */
   const jsxFile = () => {
     const result = [];
-    for (let i = 0; i < fileReqCnt; i++) {
+    for (let idx = 0; idx < fileReqCnt; idx++) {
       result.push(
-        <tr key={i}>
+        <tr key={idx}>
           <th className="fir">
-            첨부파일 {i + 1} {i === 0 ? <i className="req">*</i> : ""}
+            첨부파일 {idx + 1} {idx === 0 ? <i className="req">*</i> : ""}
           </th>
           <td colSpan="3">
-            <span>
-              <a href="{() => false}">상담내역2.xlsx</a>
-              <a href="{() => false}" className="ic-del">
-                삭제
-              </a>
-            </span>
-            <br />
+            {/* AAAAAAAAAAAAAAAAAAAAAASH 여기서 나는 board.fileList[idx] 인것만 사용하면 되는데.. */}
+            {board.fileList.map((file, fileIdx) =>
+              fileIdx === idx ? (
+                <span key={file.fileNo}>
+                  <a
+                    href="{() => false}"
+                    onClick={(e) =>
+                      downloadFile(e, file.fileNo, file.originFileNm)
+                    }
+                  >
+                    {file.originFileNm}
+                  </a>
+                  <a
+                    href="{() => false}"
+                    onClick={(e) => deleteFile(e, file.fileNo)}
+                    className="ic-del"
+                  >
+                    삭제
+                  </a>
+                  <br />
+                </span>
+              ) : (
+                ""
+              )
+            )}
             <input
               type="file"
               className="input block mt10"
               onChange={(e) => {
-                settingFileData(i, e);
+                settingFileData(idx, e);
               }}
             />
           </td>
@@ -371,58 +402,6 @@ function BoardRegPage() {
               </td>
             </tr>
             {jsxFile()}
-            <tr>
-              <th className="fir">
-                첨부파일 1 <i className="req">*</i>
-              </th>
-              <td colSpan="3">
-                <span>
-                  <a href="{() => false}">상담내역2.xlsx</a>
-                  <a href="{() => false}" className="ic-del">
-                    삭제
-                  </a>
-                </span>
-                <br />
-                <input
-                  type="file"
-                  className="input block mt10"
-                  onChange={(e) => {
-                    settingFileData(0, e);
-                  }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th className="fir">첨부파일 2</th>
-              <td colSpan="3">
-                <span>
-                  <a href="{() => false}">상담내역2.xlsx</a>
-                  <a href="{() => false}" className="ic-del">
-                    삭제
-                  </a>
-                </span>
-                <br />
-                <input
-                  type="file"
-                  className="input block mt10"
-                  onChange={(e) => {
-                    settingFileData(1, e);
-                  }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th className="fir">첨부파일 3</th>
-              <td colSpan="3">
-                <input
-                  type="file"
-                  className="input block mt10"
-                  onChange={(e) => {
-                    settingFileData(2, e);
-                  }}
-                />
-              </td>
-            </tr>
           </tbody>
         </table>
 
