@@ -1,3 +1,5 @@
+import React from "react";
+
 function Bottom() {
   return (
     <div id="footer">
@@ -11,8 +13,7 @@ function Bottom() {
           </li>
         </ul>
         <address>
-          <b>(주)인터플러그</b> 서울시 서대문구 연세로 5다길 22-3 3층 (신촌역1번
-          출구)
+          <b>(주)안수현회사</b> 안수현회사
           <br />
         </address>
         <p className="copy">

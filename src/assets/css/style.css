@@ -693,7 +693,7 @@ input[type="radio"] {
   z-index: 9;
 }
 #header h1.logo a {
-  background: url("../images/interplug_footer_logo.png") 50% 50% no-repeat;
+  background: url("../images/logo_footer.png") 50% 50% no-repeat;
   display: block;
   height: 38px;
   text-indent: -9999px;
@@ -962,7 +962,7 @@ body#index #gnb-wrap {
   left: 50px;
   display: block;
   margin-top: -13px;
-  background: url("../images/interplug_footer_logo.png") 0 0 no-repeat;
+  background: url("../images/logo_footer.png") 0 0 no-repeat;
   width: 100px;
   height: 26px;
 }
@@ -1922,7 +1922,9 @@ table.view .ic-del {
   margin: 0 2px;
   min-width: 24px;
   padding: 0;
-  font: normal 12px/22px Tahoma, Sans-serif;
+  font:
+    normal 12px/22px Tahoma,
+    Sans-serif;
   border: #c2c4ca 1px solid;
   border-right: #a5a7ac 1px solid;
   border-bottom: #a5a7ac 1px solid;
